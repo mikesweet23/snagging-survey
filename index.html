@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f5f1" />
+    <meta name="description" content="A simple, offline first site survey and snagging tool." />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Site Survey</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <button class="brand" id="brand-home" type="button" aria-label="Site Survey home">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 14.5 16 5l11 9.5v12a1.5 1.5 0 0 1-1.5 1.5h-19A1.5 1.5 0 0 1 5 26.5z"/><path d="M12 28v-9h8v9M11 13h10"/></svg></span>
+          <span class="brand-copy"><strong>Site Survey</strong><small>Field notes, made simple</small></span>
+        </button>
+        <div class="topbar-actions">
+          <span class="offline-pill"><span></span> Works offline</span>
+          <button id="install-button" class="button button-quiet install-button" type="button" hidden>Install app</button>
+          <button id="new-survey-top" class="button button-primary" type="button"><span class="plus">+</span> New survey</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="home-view" class="home-view">
+          <div class="welcome-panel">
+            <div class="welcome-copy">
+              <span class="eyebrow">ON SITE, WITHOUT THE PAPERWORK</span>
+              <h1>Make the details<br /><span>easy to act on.</span></h1>
+              <p>Photograph a snag, add a clear note, mark it up and assign the next step. Your surveys are saved on this device.</p>
+              <button id="new-survey-hero" class="button button-primary button-large" type="button"><span class="plus">+</span> Start a survey</button>
+            </div>
+            <div class="welcome-art" aria-hidden="true">
+              <div class="art-paper"><div class="art-photo"><span class="art-window"></span><span class="art-mark"></span></div><div class="art-lines"><i></i><i></i><i></i></div><div class="art-tag">TO ACTION</div></div>
+              <span class="art-spark spark-one">✳</span><span class="art-spark spark-two">✳</span>
+            </div>
+          </div>
+
+          <section class="saved-section" aria-labelledby="saved-title">
+            <div class="section-heading">
+              <div><span class="eyebrow">YOUR WORK</span><h2 id="saved-title">Recent surveys</h2></div>
+              <span id="survey-count" class="count-label"></span>
+            </div>
+            <div id="survey-list" class="survey-grid"></div>
+          </section>
+          <p class="privacy-note"><span aria-hidden="true">◈</span> Your survey information and photos stay in this browser on this device.</p>
+        </section>
+
+        <section id="editor-view" class="editor-view" hidden>
+          <div class="editor-toolbar">
+            <button id="back-home" class="back-button" type="button"><span aria-hidden="true">←</span> All surveys</button>
+            <div class="save-indicator" id="save-indicator"><span class="save-dot"></span><span>Saved on this device</span></div>
+            <button id="export-pdf" class="button button-dark" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0 4-4m-4 4L6 8M3 13v4h14v-4"/></svg> Export PDF</button>
+          </div>
+
+          <div class="editor-heading">
+            <div><span class="eyebrow">FIELD REPORT</span><h1>Site survey</h1><p>Add the details once, then record each item as you walk the site.</p></div>
+            <div class="report-stamp"><span class="stamp-icon">✓</span><span><strong id="item-total">0 items</strong><small>in this survey</small></span></div>
+          </div>
+
+          <section class="details-card" aria-labelledby="details-title">
+            <div class="card-title-row"><div class="card-icon date-icon" aria-hidden="true">▦</div><div><h2 id="details-title">Survey details</h2><p>Set the basic details for this report.</p></div></div>
+            <div class="details-fields">
+              <label class="field"><span>Survey date</span><input id="survey-date" type="date" required /></label>
+              <label class="field field-site"><span>Site name</span><input id="survey-site" type="text" placeholder="e.g. Willow House, Flat 3" autocomplete="organization" required /></label>
+              <label class="field"><span>Surveyor</span><input id="surveyor-name" type="text" placeholder="Your name" autocomplete="name" required /></label>
+            </div>
+          </section>
+
+          <section class="items-section" aria-labelledby="items-title">
+            <div class="section-heading items-heading">
+              <div><span class="eyebrow">WALK THE SITE</span><h2 id="items-title">Items to action</h2><p>Each item can have a photo, a note and a clear owner.</p></div>
+              <button id="add-item" class="button button-primary" type="button"><span class="plus">+</span> Add item</button>
+            </div>
+            <div id="item-list" class="item-list"></div>
+          </section>
+          <footer class="editor-footer"><span>Saved automatically on this device</span><button id="delete-survey" class="text-button text-danger" type="button">Delete this survey</button></footer>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="item-dialog" class="item-dialog">
+      <form id="item-form" class="item-form">
+        <div class="dialog-heading"><div><span class="eyebrow">SURVEY ITEM</span><h2 id="item-dialog-title">Add an item</h2></div><button id="close-item-dialog" class="icon-button" type="button" aria-label="Close">×</button></div>
+        <div class="photo-picker">
+          <div id="photo-empty" class="photo-empty"><span class="camera-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h3l1.4-2h7.2l1.4 2h3A1.5 1.5 0 0 1 21.5 9v9.5A1.5 1.5 0 0 1 20 20H4a1.5 1.5 0 0 1-1.5-1.5V9A1.5 1.5 0 0 1 4 7.5Z"/><circle cx="12" cy="13" r="4"/></svg></span><strong>Add a site photo</strong><small>Take a photo or choose one from your device</small></div>
+          <img id="draft-preview" class="draft-preview" alt="Selected site photo" hidden />
+          <div class="photo-actions"><button id="take-photo" type="button" class="button button-photo"><span aria-hidden="true">◉</span> Take photo</button><button id="choose-photo" type="button" class="button button-outline">Choose photo</button><button id="annotate-photo" type="button" class="button button-outline annotate-button" hidden>Mark up</button></div>
+          <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
+          <input id="library-input" type="file" accept="image/*" hidden />
+        </div>
+        <div class="form-fields">
+          <label class="field"><span>Room or area <small>Optional</small></span><input id="item-area" type="text" placeholder="e.g. Kitchen, above sink" /></label>
+          <label class="field"><span>Observation &amp; comments</span><textarea id="item-notes" rows="4" placeholder="What needs attention? Add enough detail to make the fix clear."></textarea></label>
+          <div class="action-fields">
+            <label class="field"><span>Who needs to action this?</span><select id="item-action"><option value="">Select a trade or person</option><option>Builder</option><option>Electrician</option><option>Plumber</option><option>Joiner</option><option>Decorator</option><option>Tiler</option><option>Flooring contractor</option><option>Glazier</option><option>Heating / ventilation</option><option>Landscaper</option><option>Client</option><option>Other</option></select></label>
+            <label class="field"><span>Action by</span><input id="item-due" type="date" /></label>
+          </div>
+          <label id="other-action-field" class="field other-action-field" hidden><span>Action owner</span><input id="item-action-other" type="text" placeholder="Enter a name or trade" /></label>
+        </div>
+        <div class="dialog-footer"><button id="remove-item" class="text-button text-danger" type="button" hidden>Delete item</button><span class="footer-spacer"></span><button id="cancel-item" class="button button-outline" type="button">Cancel</button><button class="button button-primary" type="submit">Save item</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="markup-dialog" class="markup-dialog">
+      <div class="markup-content">
+        <div class="dialog-heading"><div><span class="eyebrow">PHOTO MARKUP</span><h2>Mark the detail</h2><p>Draw on the photo to point out what needs attention.</p></div><button id="close-markup" class="icon-button" type="button" aria-label="Close">×</button></div>
+        <div class="markup-tools"><div class="color-tools" aria-label="Pen colour"><button class="color-swatch selected" data-color="#e34f36" type="button" aria-label="Red pen"></button><button class="color-swatch yellow-swatch" data-color="#ffd34e" type="button" aria-label="Yellow pen"></button><button class="color-swatch blue-swatch" data-color="#3282ce" type="button" aria-label="Blue pen"></button></div><span class="tool-hint">Draw with your finger or mouse</span><button id="undo-mark" class="text-button" type="button">Undo</button><button id="clear-marks" class="text-button" type="button">Clear marks</button></div>
+        <div class="canvas-wrap"><canvas id="markup-canvas" aria-label="Photo markup canvas"></canvas></div>
+        <div class="dialog-footer markup-footer"><span class="footer-spacer"></span><button id="cancel-markup" class="button button-outline" type="button">Cancel</button><button id="save-markup" class="button button-primary" type="button">Save markup</button></div>
+      </div>
+    </dialog>
+
+    <div id="print-report" aria-hidden="true"></div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
