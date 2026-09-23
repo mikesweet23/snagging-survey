@@ -327,7 +327,7 @@ function showPhotoPreview() {
 }
 
 async function compressPhoto(file) {
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await decodePhoto(file);
   const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
@@ -335,9 +335,31 @@ async function compressPhoto(file) {
   const context = canvas.getContext('2d', { alpha: false });
   context.fillStyle = '#fff';
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap.source || bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close?.();
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('This photo could not be prepared.')), 'image/jpeg', .84));
+}
+
+async function decodePhoto(source) {
+  try {
+    return await createImageBitmap(source);
+  } catch (bitmapError) {
+    const url = URL.createObjectURL(source);
+    const image = new Image();
+    image.src = url;
+    try {
+      await image.decode();
+      return {
+        source: image,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        close: () => URL.revokeObjectURL(url),
+      };
+    } catch {
+      URL.revokeObjectURL(url);
+      throw bitmapError;
+    }
+  }
 }
 
 async function handlePhoto(file) {
@@ -356,11 +378,11 @@ async function openMarkup() {
   if (!draftPhoto) return;
   try {
     markupOriginal?.close?.();
-    markupOriginal = await createImageBitmap(draftPhoto);
+    markupOriginal = await decodePhoto(draftPhoto);
     markupCanvas.width = markupOriginal.width;
     markupCanvas.height = markupOriginal.height;
     markupContext.clearRect(0, 0, markupCanvas.width, markupCanvas.height);
-    markupContext.drawImage(markupOriginal, 0, 0);
+    markupContext.drawImage(markupOriginal.source || markupOriginal, 0, 0);
     markupUndo = [];
     markupDialog.showModal();
   } catch (error) {
@@ -571,7 +593,7 @@ $('#close-markup').addEventListener('click', () => markupDialog.close());
 $('#cancel-markup').addEventListener('click', () => markupDialog.close());
 $('#save-markup').addEventListener('click', saveMarkup);
 $('#undo-mark').addEventListener('click', () => { const image = markupUndo.pop(); if (image) markupContext.putImageData(image, 0, 0); });
-$('#clear-marks').addEventListener('click', () => { if (!markupOriginal) return; pushUndo(); markupContext.clearRect(0, 0, markupCanvas.width, markupCanvas.height); markupContext.drawImage(markupOriginal, 0, 0); });
+$('#clear-marks').addEventListener('click', () => { if (!markupOriginal) return; pushUndo(); markupContext.clearRect(0, 0, markupCanvas.width, markupCanvas.height); markupContext.drawImage(markupOriginal.source || markupOriginal, 0, 0); });
 $$('.color-swatch').forEach((button) => button.addEventListener('click', () => {
   $$('.color-swatch').forEach((swatch) => swatch.classList.remove('selected'));
   button.classList.add('selected');
